@@ -114,7 +114,7 @@ gulp.task('build', function(cb) {
     //Bundle everything into an ES6 module:
     function buildBundle(assets, csp) {
         //Keep these names the same as in package.json:
-        const outBase = csp ? 'dist/vanilla-picker.csp' : 'dist/vanilla-picker',
+        const outBase = csp ? 'C:/Applications/react_test/my-app/src/picker/dist/vanilla-picker.csp' : 'C:/Applications/react_test/my-app/src/picker/dist/vanilla-picker',
               outModule = outBase + '.mjs',
               outUMD = outBase + '.js',
               outUMDMin = outBase + '.min.js';

@@ -6,6 +6,36 @@
 .picker_wrapper.no_alpha  .picker_alpha {
     display: none;
 }
+
+.picker_wrapper {
+    &.no_additionally {
+        .picker_name {
+            display: none;
+        }
+    }
+}
+.onlyHue {
+    &.layout_default.picker_wrapper {
+        width: 100%;
+        border: 0;
+        box-shadow: none;
+    padding: 0;
+        .picker_hue {
+            margin: 0;
+            border: 0;
+            border-radius: 6px;
+            box-shadow: none;
+            overflow: hidden;
+            padding: 12px 16px;
+        }
+        .picker_selector {
+            display: none;
+        }
+        }
+    .picker_sl,.picker_editor, .picker_sample,.picker_done, .picker_tonal {
+        display: none;
+    }
+}
 //Always keep the editor on-screen, for screen readers:
 .picker_wrapper.no_editor .picker_editor {
     position: absolute;
@@ -21,26 +51,26 @@
 
     $width-gutter: 1em;
     $width-slider: 2em;
-    
-    
+
+
     &.picker_wrapper {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-between;
         align-items: stretch;
-        
+
         font-size: 10px;
         width: 25em;
         //Since we use "em"s for layout here, restore the correct font-size on elements with text:
         input, button {
             font-size: 1rem;
         }
-        
+
         padding: math.div($width-gutter, 2);
         > * {
             margin: math.div($width-gutter, 2);
         }
-        
+
         //https://stackoverflow.com/questions/29732575/line-break-in-multi-line-flexbox
         //We use this to insert a line break after .picker_alpha,
         //which lets us set .picker_sl to use all available space to the left of it (via flex-grow: 1),
@@ -53,22 +83,22 @@
             order: 1;
         }
     }
-    
-    
+
+
     .picker_slider, .picker_selector {
         padding: math.div($width-slider, 2);
     }
-    
-    
+
+
     .picker_hue {
         width: 100%;
     }
-    
-    
+
+
     .picker_sl {
         //width: calc(100% - #{2*$width-gutter} - #{$width-slider});
         flex: 1 1 auto;
-        
+
         //With variable width, we need a pseudo-element to make it a square, whatever size:
         &::before {
             content: '';
@@ -76,8 +106,8 @@
             padding-bottom: 100%;
         }
     }
-    
-    
+
+
     .picker_editor {
         order: 1;
         //width: 100%;
@@ -88,18 +118,65 @@
             height: 100%;
         }
     }
-    
-    
+
+
     .picker_sample {
         order: 1;
-        //width: 170px;
-        //height: 30px;
         flex: 1 1 auto;
     }
-    
-    
-    .picker_done, .picker_cancel {
+
+
+    .picker_done, .picker_cancel, .picker_name {
         order: 1;
     }
+    .picker_name {
+        width: 100%;
+    }
+
+    .picker_tonal_wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        gap: 10px;
+        label {
+            display: flex;
+        }
+        span {
+            display: block;
+        }
+    }
+
+    .picker_tonal {
+        &_title {
+            font-size: 16px;
+            text-align: left;
+            margin-bottom: 6px;
+        }
+        &_wrap {
+            > div {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+
+            label {
+                width: 16px;
+                height: 16px;
+            }
+
+            input {
+                padding: 0;
+                margin: 0;
+                border: 0;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .picker_tonal {
+        order: 1;
+        width: 100%;
+    }
+
 
 }

@@ -501,6 +501,7 @@
       e.preventDefault();
       e.stopPropagation();
   }
+
   function onKey(bucket, target, keys, handler, stop) {
       bucket.add(target, EVENT_KEY, function (e) {
           if (keys.indexOf(e.key) >= 0) {
@@ -517,18 +518,26 @@
           classCallCheck(this, Picker);
 
 
+          this.cl_name = '';
+          this.cl_color = '';
+          this.cl_checked = [];
+          this.cl_id = options.id;
+
           this.settings = {
 
               popup: 'right',
               layout: 'default',
               alpha: true,
+              primary: true,
               editor: true,
               editorFormat: 'hex',
               cancelButton: false,
-              defaultColor: '#0cf'
+              defaultColor: '#fff'
           };
 
           this._events = new EventBucket();
+
+          this.onChangeAlias = null;
 
           this.onChange = null;
 
@@ -537,6 +546,9 @@
           this.onOpen = null;
 
           this.onClose = null;
+
+          this.onInit = null;
+          this.onlyHue = false;
 
           this.setOptions(options);
       }
@@ -578,16 +590,33 @@
                   if (options.onDone) {
                       this.onDone = options.onDone;
                   }
+                  if (options.onInit) {
+                      this.onInit = options.onInit;
+                  }
                   if (options.onOpen) {
                       this.onOpen = options.onOpen;
                   }
                   if (options.onClose) {
                       this.onClose = options.onClose;
                   }
+                  if (options.hueOnly) {
+                      this.onlyHue = true;
+                  }
 
                   var col = options.color || options.colour;
+                  if (options.alias) {
+                      this.cl_name = options.alias;
+                      this.alias = options.alias;
+                      if (options.parent) {
+                          var nameHolder = options.parent.parentNode.nextElementSibling;
+                          nameHolder.textContent = options.alias;
+                      }
+                  }
                   if (col) {
                       this._setColor(col);
+                      if (options.color) {
+                          this.cl_color = this.colour.printHex(this.settings.alpha);
+                      }
                   }
               }
 
@@ -603,6 +632,12 @@
                   onKey(this._events, parent, [' ', 'Spacebar', 'Enter'], openProxy);
 
                   this._popupInited = true;
+                  if (this.onInit) {
+                      this.onInit();
+                  }
+                  if (options.parent && options.color) {
+                      options.parent.style.background = options.color;
+                  }
               } else if (options.parent && !settings.popup) {
                   this.show();
               }
@@ -631,6 +666,8 @@
           value: function closeHandler(e) {
               var event = e && e.type;
               var doHide = false;
+
+              this._setAttributes();
 
               if (!e) {
                   doHide = true;
@@ -726,9 +763,9 @@
                   return toggled;
               }
 
-              var html = this.settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color name or hex value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div><div class="picker_cancel"><button>Cancel</button></div></div>';
+              var html = this.settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color name or hex value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div><div class="picker_cancel"><button>Cancel</button></div><div class="picker_name"><input name="picker_name" placeholder="\u0410\u043B\u0438\u0430\u0441 \u0446\u0432\u0435\u0442\u0430"/></div><div class="picker_tonal"><div class="picker_tonal_title">\u0422\u043E\u043D\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u044C</div><div class="picker_tonal_wrap"><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>0</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>6</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>10</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>14</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>18</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>20</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>22</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>30</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>40</span></div><div><label><input value="" data-tonal="20" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>50</span></div><div><label><input value="" data-tonal="30" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>60</span></div><div><label><input value="" data-tonal="40" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>70</span></div><div><label><input value="" data-tonal="50" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>80</span></div><div><label><input value="" data-tonal="60" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>87</span></div><div><label><input value="" data-tonal="70" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>90</span></div><div><label><input value="" data-tonal="80" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>92</span></div><div><label><input value="" data-tonal="90" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>94</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>96</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>98</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>100</span></div></div></div></div>';
               var wrapper = parseHTML(html);
-
+              console.log(wrapper);
               this.domElement = wrapper;
               this._domH = $('.picker_hue', wrapper);
               this._domSL = $('.picker_sl', wrapper);
@@ -736,11 +773,16 @@
               this._domEdit = $('.picker_editor input', wrapper);
               this._domSample = $('.picker_sample', wrapper);
               this._domOkay = $('.picker_done button', wrapper);
+              this._alias = $('.picker_name input', wrapper);
               this._domCancel = $('.picker_cancel button', wrapper);
+              this._pickerTonal = $('.picker_tonal', wrapper);
 
               wrapper.classList.add('layout_' + this.settings.layout);
               if (!this.settings.alpha) {
                   wrapper.classList.add('no_alpha');
+              }
+              if (this.settings.primary) {
+                  wrapper.classList.add('no_additionally');
               }
               if (!this.settings.editor) {
                   wrapper.classList.add('no_editor');
@@ -759,8 +801,11 @@
               } else {
                   this._setColor(this.settings.defaultColor);
               }
+              if (this._alias && this.alias) {
+                  this._alias.value = this.alias;
+              }
               this._bindEvents();
-
+              this._setAttributes();
               return true;
           }
       }, {
@@ -790,7 +835,10 @@
               }
 
               addEvent(dom, 'click', function (e) {
-                  return e.preventDefault();
+                  var target = e.target;
+                  if (target !== _this2._pickerTonal && !_this2._pickerTonal.contains(target)) {
+                      e.preventDefault();
+                  }
               });
 
               dragTrack(events, this._domH, function (x, y) {
@@ -808,6 +856,7 @@
               }
 
               var editInput = this._domEdit;
+
               {
                   addEvent(editInput, 'input', function (e) {
                       that._setColor(this.value, { fromEditor: true, failSilently: true });
@@ -821,6 +870,12 @@
                       }
                   });
               }
+
+              addEvent(this._alias, 'input', function (e) {
+                  if (_this2.onChangeAlias) {
+                      _this2.onChangeAlias(e.target.value.length ? e.target.value : _this2.cl_id);
+                  }
+              });
 
               this._ifPopup(function () {
 
@@ -847,11 +902,19 @@
                       return _this2.closeHandler(e);
                   });
                   if (_this2.onDone) {
+                      _this2._setAttributes();
                       _this2.onDone(_this2.colour);
                   }
               };
               addEvent(this._domOkay, 'click', onDoneProxy);
               onKey(events, dom, ['Enter'], onDoneProxy);
+          }
+      }, {
+          key: '_setAttributes',
+          value: function _setAttributes() {
+              this.cl_name = this._alias.value;
+              this.cl_color = this._domEdit.value;
+              this.cl_checked = this._pickerTonal.querySelectorAll('input:checked');
           }
       }, {
           key: '_setPosition',
@@ -897,6 +960,11 @@
                   }
               });
               col.hsla = hsla;
+              if (this.alias) {
+                  col.name = this.alias;
+              } else {
+                  col.name = this._alias && this._alias.value.length ? this._alias.value : this.cl_id;
+              }
 
               this._updateUI(flags);
 
@@ -928,6 +996,7 @@
               function posX(parent, child, relX) {
                   child.style.left = relX * 100 + '%';
               }
+
               function posY(parent, child, relY) {
                   child.style.top = relY * 100 + '%';
               }
@@ -956,9 +1025,11 @@
                   var value = void 0;
                   switch (format) {
                       case 'rgb':
-                          value = col.printRGB(alpha);break;
+                          value = col.printRGB(alpha);
+                          break;
                       case 'hsl':
-                          value = col.printHSL(alpha);break;
+                          value = col.printHSL(alpha);
+                          break;
                       default:
                           value = col.printHex(alpha);
                   }
@@ -998,7 +1069,7 @@
 
   {
       var style = document.createElement('style');
-      style.textContent = '.picker_wrapper.no_alpha .picker_alpha{display:none}.picker_wrapper.no_editor .picker_editor{position:absolute;z-index:-1;opacity:0}.picker_wrapper.no_cancel .picker_cancel{display:none}.layout_default.picker_wrapper{display:flex;flex-flow:row wrap;justify-content:space-between;align-items:stretch;font-size:10px;width:25em;padding:.5em}.layout_default.picker_wrapper input,.layout_default.picker_wrapper button{font-size:1rem}.layout_default.picker_wrapper>*{margin:.5em}.layout_default.picker_wrapper::before{content:"";display:block;width:100%;height:0;order:1}.layout_default .picker_slider,.layout_default .picker_selector{padding:1em}.layout_default .picker_hue{width:100%}.layout_default .picker_sl{flex:1 1 auto}.layout_default .picker_sl::before{content:"";display:block;padding-bottom:100%}.layout_default .picker_editor{order:1;width:6.5rem}.layout_default .picker_editor input{width:100%;height:100%}.layout_default .picker_sample{order:1;flex:1 1 auto}.layout_default .picker_done,.layout_default .picker_cancel{order:1}.picker_wrapper{box-sizing:border-box;background:#f2f2f2;box-shadow:0 0 0 1px silver;cursor:default;font-family:sans-serif;color:#444;pointer-events:auto}.picker_wrapper:focus{outline:none}.picker_wrapper button,.picker_wrapper input{box-sizing:border-box;border:none;box-shadow:0 0 0 1px silver;outline:none}.picker_wrapper button:focus,.picker_wrapper button:active,.picker_wrapper input:focus,.picker_wrapper input:active{box-shadow:0 0 2px 1px #1e90ff}.picker_wrapper button{padding:.4em .6em;cursor:pointer;background-color:#f5f5f5;background-image:linear-gradient(0deg, gainsboro, transparent)}.picker_wrapper button:active{background-image:linear-gradient(0deg, transparent, gainsboro)}.picker_wrapper button:hover{background-color:#fff}.picker_selector{position:absolute;z-index:1;display:block;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);border:2px solid #fff;border-radius:100%;box-shadow:0 0 3px 1px #67b9ff;background:currentColor;cursor:pointer}.picker_slider .picker_selector{border-radius:2px}.picker_hue{position:relative;background-image:linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red);box-shadow:0 0 0 1px silver}.picker_sl{position:relative;box-shadow:0 0 0 1px silver;background-image:linear-gradient(180deg, white, rgba(255, 255, 255, 0) 50%),linear-gradient(0deg, black, rgba(0, 0, 0, 0) 50%),linear-gradient(90deg, #808080, rgba(128, 128, 128, 0))}.picker_alpha,.picker_sample{position:relative;background:linear-gradient(45deg, lightgrey 25%, transparent 25%, transparent 75%, lightgrey 75%) 0 0/2em 2em,linear-gradient(45deg, lightgrey 25%, white 25%, white 75%, lightgrey 75%) 1em 1em/2em 2em;box-shadow:0 0 0 1px silver}.picker_alpha .picker_selector,.picker_sample .picker_selector{background:none}.picker_editor input{font-family:monospace;padding:.2em .4em}.picker_sample::before{content:"";position:absolute;display:block;width:100%;height:100%;background:currentColor}.picker_arrow{position:absolute;z-index:-1}.picker_wrapper.popup{position:absolute;z-index:2;margin:1.5em}.picker_wrapper.popup,.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{background:#f2f2f2;box-shadow:0 0 10px 1px rgba(0,0,0,.4)}.picker_wrapper.popup .picker_arrow{width:3em;height:3em;margin:0}.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{content:"";display:block;position:absolute;top:0;left:0;z-index:-99}.picker_wrapper.popup .picker_arrow::before{width:100%;height:100%;-webkit-transform:skew(45deg);transform:skew(45deg);-webkit-transform-origin:0 100%;transform-origin:0 100%}.picker_wrapper.popup .picker_arrow::after{width:150%;height:150%;box-shadow:none}.popup.popup_top{bottom:100%;left:0}.popup.popup_top .picker_arrow{bottom:0;left:0;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}.popup.popup_bottom{top:100%;left:0}.popup.popup_bottom .picker_arrow{top:0;left:0;-webkit-transform:rotate(90deg) scale(1, -1);transform:rotate(90deg) scale(1, -1)}.popup.popup_left{top:0;right:100%}.popup.popup_left .picker_arrow{top:0;right:0;-webkit-transform:scale(-1, 1);transform:scale(-1, 1)}.popup.popup_right{top:0;left:100%}.popup.popup_right .picker_arrow{top:0;left:0}';
+      style.textContent = '.picker_wrapper.no_alpha .picker_alpha{display:none}.picker_wrapper.no_additionally .picker_name{display:none}.picker_wrapper.no_editor .picker_editor{position:absolute;z-index:-1;opacity:0}.picker_wrapper.no_cancel .picker_cancel{display:none}.layout_default.picker_wrapper{display:flex;flex-flow:row wrap;justify-content:space-between;align-items:stretch;font-size:10px;width:25em;padding:.5em}.layout_default.picker_wrapper input,.layout_default.picker_wrapper button{font-size:1rem}.layout_default.picker_wrapper>*{margin:.5em}.layout_default.picker_wrapper::before{content:"";display:block;width:100%;height:0;order:1}.layout_default .picker_slider,.layout_default .picker_selector{padding:1em}.layout_default .picker_hue{width:100%}.layout_default .picker_sl{flex:1 1 auto}.layout_default .picker_sl::before{content:"";display:block;padding-bottom:100%}.layout_default .picker_editor{order:1;width:6.5rem}.layout_default .picker_editor input{width:100%;height:100%}.layout_default .picker_sample{order:1;flex:1 1 auto}.layout_default .picker_done,.layout_default .picker_cancel,.layout_default .picker_name{order:1}.layout_default .picker_name{width:100%}.layout_default .picker_tonal_wrap{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px}.layout_default .picker_tonal_wrap label{display:flex}.layout_default .picker_tonal_wrap span{display:block}.layout_default .picker_tonal_title{font-size:16px;text-align:left;margin-bottom:6px}.layout_default .picker_tonal_wrap>div{display:flex;flex-direction:column;align-items:center;gap:6px}.layout_default .picker_tonal_wrap label{width:16px;height:16px}.layout_default .picker_tonal_wrap input{padding:0;margin:0;border:0;box-shadow:none}.layout_default .picker_tonal{order:1;width:100%}.picker_wrapper{box-sizing:border-box;background:#f2f2f2;box-shadow:0 0 0 1px silver;cursor:default;font-family:sans-serif;color:#444;pointer-events:auto}.picker_wrapper:focus{outline:none}.picker_wrapper button,.picker_wrapper input{box-sizing:border-box;border:none;box-shadow:0 0 0 1px silver;outline:none}.picker_wrapper button:focus,.picker_wrapper button:active,.picker_wrapper input:focus,.picker_wrapper input:active{box-shadow:0 0 2px 1px #1e90ff}.picker_wrapper button{padding:.4em .6em;cursor:pointer;background-color:#f5f5f5;background-image:linear-gradient(0deg, gainsboro, transparent)}.picker_wrapper button:active{background-image:linear-gradient(0deg, transparent, gainsboro)}.picker_wrapper button:hover{background-color:#fff}.picker_selector{position:absolute;z-index:1;display:block;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);border:2px solid #fff;border-radius:100%;box-shadow:0 0 3px 1px #67b9ff;background:currentColor;cursor:pointer}.picker_slider .picker_selector{border-radius:2px}.picker_hue{position:relative;background-image:linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red);box-shadow:0 0 0 1px silver}.picker_sl{position:relative;box-shadow:0 0 0 1px silver;background-image:linear-gradient(180deg, white, rgba(255, 255, 255, 0) 50%),linear-gradient(0deg, black, rgba(0, 0, 0, 0) 50%),linear-gradient(90deg, #808080, rgba(128, 128, 128, 0))}.picker_alpha,.picker_sample{position:relative;background:linear-gradient(45deg, lightgrey 25%, transparent 25%, transparent 75%, lightgrey 75%) 0 0/2em 2em,linear-gradient(45deg, lightgrey 25%, white 25%, white 75%, lightgrey 75%) 1em 1em/2em 2em;box-shadow:0 0 0 1px silver}.picker_alpha .picker_selector,.picker_sample .picker_selector{background:none}.picker_editor input{font-family:monospace;padding:.2em .4em}.picker_sample::before{content:"";position:absolute;display:block;width:100%;height:100%;background:currentColor}.picker_arrow{position:absolute;z-index:-1}.picker_wrapper.popup{position:absolute;z-index:2;margin:1.5em}.picker_wrapper.popup,.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{background:#f2f2f2;box-shadow:0 0 10px 1px rgba(0,0,0,.4)}.picker_wrapper.popup .picker_arrow{width:3em;height:3em;margin:0}.picker_wrapper.popup .picker_arrow::before,.picker_wrapper.popup .picker_arrow::after{content:"";display:block;position:absolute;top:0;left:0;z-index:-99}.picker_wrapper.popup .picker_arrow::before{width:100%;height:100%;-webkit-transform:skew(45deg);transform:skew(45deg);-webkit-transform-origin:0 100%;transform-origin:0 100%}.picker_wrapper.popup .picker_arrow::after{width:150%;height:150%;box-shadow:none}.popup.popup_top{bottom:100%;left:0}.popup.popup_top .picker_arrow{bottom:0;left:0;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}.popup.popup_bottom{top:100%;left:0}.popup.popup_bottom .picker_arrow{top:0;left:0;-webkit-transform:rotate(90deg) scale(1, -1);transform:rotate(90deg) scale(1, -1)}.popup.popup_left{top:0;right:100%}.popup.popup_left .picker_arrow{top:0;right:0;-webkit-transform:scale(-1, 1);transform:scale(-1, 1)}.popup.popup_right{top:0;left:100%}.popup.popup_right .picker_arrow{top:0;left:0}';
       document.documentElement.firstElementChild.appendChild(style);
 
       Picker.StyleElement = style;

@@ -495,6 +495,7 @@ function stopEvent(e) {
     e.preventDefault();
     e.stopPropagation();
 }
+
 function onKey(bucket, target, keys, handler, stop) {
     bucket.add(target, EVENT_KEY, function (e) {
         if (keys.indexOf(e.key) >= 0) {
@@ -511,18 +512,26 @@ var Picker = function () {
         classCallCheck(this, Picker);
 
 
+        this.cl_name = '';
+        this.cl_color = '';
+        this.cl_checked = [];
+        this.cl_id = options.id;
+
         this.settings = {
 
             popup: 'right',
             layout: 'default',
             alpha: true,
+            primary: true,
             editor: true,
             editorFormat: 'hex',
             cancelButton: false,
-            defaultColor: '#0cf'
+            defaultColor: '#fff'
         };
 
         this._events = new EventBucket();
+
+        this.onChangeAlias = null;
 
         this.onChange = null;
 
@@ -531,6 +540,9 @@ var Picker = function () {
         this.onOpen = null;
 
         this.onClose = null;
+
+        this.onInit = null;
+        this.onlyHue = false;
 
         this.setOptions(options);
     }
@@ -572,16 +584,33 @@ var Picker = function () {
                 if (options.onDone) {
                     this.onDone = options.onDone;
                 }
+                if (options.onInit) {
+                    this.onInit = options.onInit;
+                }
                 if (options.onOpen) {
                     this.onOpen = options.onOpen;
                 }
                 if (options.onClose) {
                     this.onClose = options.onClose;
                 }
+                if (options.hueOnly) {
+                    this.onlyHue = true;
+                }
 
                 var col = options.color || options.colour;
+                if (options.alias) {
+                    this.cl_name = options.alias;
+                    this.alias = options.alias;
+                    if (options.parent) {
+                        var nameHolder = options.parent.parentNode.nextElementSibling;
+                        nameHolder.textContent = options.alias;
+                    }
+                }
                 if (col) {
                     this._setColor(col);
+                    if (options.color) {
+                        this.cl_color = this.colour.printHex(this.settings.alpha);
+                    }
                 }
             }
 
@@ -597,6 +626,12 @@ var Picker = function () {
                 onKey(this._events, parent, [' ', 'Spacebar', 'Enter'], openProxy);
 
                 this._popupInited = true;
+                if (this.onInit) {
+                    this.onInit();
+                }
+                if (options.parent && options.color) {
+                    options.parent.style.background = options.color;
+                }
             } else if (options.parent && !settings.popup) {
                 this.show();
             }
@@ -625,6 +660,8 @@ var Picker = function () {
         value: function closeHandler(e) {
             var event = e && e.type;
             var doHide = false;
+
+            this._setAttributes();
 
             if (!e) {
                 doHide = true;
@@ -720,9 +757,9 @@ var Picker = function () {
                 return toggled;
             }
 
-            var html = this.settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color name or hex value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div><div class="picker_cancel"><button>Cancel</button></div></div>';
+            var html = this.settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color name or hex value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div><div class="picker_cancel"><button>Cancel</button></div><div class="picker_name"><input name="picker_name" placeholder="\u0410\u043B\u0438\u0430\u0441 \u0446\u0432\u0435\u0442\u0430"/></div><div class="picker_tonal"><div class="picker_tonal_title">\u0422\u043E\u043D\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u044C</div><div class="picker_tonal_wrap"><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>0</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>6</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>10</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>14</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>18</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>20</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>22</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>30</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>40</span></div><div><label><input value="" data-tonal="20" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>50</span></div><div><label><input value="" data-tonal="30" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>60</span></div><div><label><input value="" data-tonal="40" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>70</span></div><div><label><input value="" data-tonal="50" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>80</span></div><div><label><input value="" data-tonal="60" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>87</span></div><div><label><input value="" data-tonal="70" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>90</span></div><div><label><input value="" data-tonal="80" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>92</span></div><div><label><input value="" data-tonal="90" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>94</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>96</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>98</span></div><div><label><input value="" data-tonal="10" checked="checked" type="checkbox" name="p_tonal[]"/></label><span>100</span></div></div></div></div>';
             var wrapper = parseHTML(html);
-
+            console.log(wrapper);
             this.domElement = wrapper;
             this._domH = $('.picker_hue', wrapper);
             this._domSL = $('.picker_sl', wrapper);
@@ -730,11 +767,16 @@ var Picker = function () {
             this._domEdit = $('.picker_editor input', wrapper);
             this._domSample = $('.picker_sample', wrapper);
             this._domOkay = $('.picker_done button', wrapper);
+            this._alias = $('.picker_name input', wrapper);
             this._domCancel = $('.picker_cancel button', wrapper);
+            this._pickerTonal = $('.picker_tonal', wrapper);
 
             wrapper.classList.add('layout_' + this.settings.layout);
             if (!this.settings.alpha) {
                 wrapper.classList.add('no_alpha');
+            }
+            if (this.settings.primary) {
+                wrapper.classList.add('no_additionally');
             }
             if (!this.settings.editor) {
                 wrapper.classList.add('no_editor');
@@ -753,8 +795,11 @@ var Picker = function () {
             } else {
                 this._setColor(this.settings.defaultColor);
             }
+            if (this._alias && this.alias) {
+                this._alias.value = this.alias;
+            }
             this._bindEvents();
-
+            this._setAttributes();
             return true;
         }
     }, {
@@ -784,7 +829,10 @@ var Picker = function () {
             }
 
             addEvent(dom, 'click', function (e) {
-                return e.preventDefault();
+                var target = e.target;
+                if (target !== _this2._pickerTonal && !_this2._pickerTonal.contains(target)) {
+                    e.preventDefault();
+                }
             });
 
             dragTrack(events, this._domH, function (x, y) {
@@ -802,6 +850,7 @@ var Picker = function () {
             }
 
             var editInput = this._domEdit;
+
             {
                 addEvent(editInput, 'input', function (e) {
                     that._setColor(this.value, { fromEditor: true, failSilently: true });
@@ -815,6 +864,12 @@ var Picker = function () {
                     }
                 });
             }
+
+            addEvent(this._alias, 'input', function (e) {
+                if (_this2.onChangeAlias) {
+                    _this2.onChangeAlias(e.target.value.length ? e.target.value : _this2.cl_id);
+                }
+            });
 
             this._ifPopup(function () {
 
@@ -841,11 +896,19 @@ var Picker = function () {
                     return _this2.closeHandler(e);
                 });
                 if (_this2.onDone) {
+                    _this2._setAttributes();
                     _this2.onDone(_this2.colour);
                 }
             };
             addEvent(this._domOkay, 'click', onDoneProxy);
             onKey(events, dom, ['Enter'], onDoneProxy);
+        }
+    }, {
+        key: '_setAttributes',
+        value: function _setAttributes() {
+            this.cl_name = this._alias.value;
+            this.cl_color = this._domEdit.value;
+            this.cl_checked = this._pickerTonal.querySelectorAll('input:checked');
         }
     }, {
         key: '_setPosition',
@@ -891,6 +954,11 @@ var Picker = function () {
                 }
             });
             col.hsla = hsla;
+            if (this.alias) {
+                col.name = this.alias;
+            } else {
+                col.name = this._alias && this._alias.value.length ? this._alias.value : this.cl_id;
+            }
 
             this._updateUI(flags);
 
@@ -922,6 +990,7 @@ var Picker = function () {
             function posX(parent, child, relX) {
                 child.style.left = relX * 100 + '%';
             }
+
             function posY(parent, child, relY) {
                 child.style.top = relY * 100 + '%';
             }
@@ -950,9 +1019,11 @@ var Picker = function () {
                 var value = void 0;
                 switch (format) {
                     case 'rgb':
-                        value = col.printRGB(alpha);break;
+                        value = col.printRGB(alpha);
+                        break;
                     case 'hsl':
-                        value = col.printHSL(alpha);break;
+                        value = col.printHSL(alpha);
+                        break;
                     default:
                         value = col.printHex(alpha);
                 }

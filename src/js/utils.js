@@ -11,7 +11,7 @@ class EventBucket {
             handler,
         });
     }
-    
+
     remove(target, type, handler) {
         this._events = this._events.filter(e => {
             let isMatch = true;
@@ -28,7 +28,7 @@ class EventBucket {
     static _doRemove(target, type, handler) {
         target.removeEventListener(type, handler, false);
     }
-    
+
     destroy() {
         this._events.forEach(e => EventBucket._doRemove(e.target, e.type, e.handler));
         this._events = [];
@@ -36,6 +36,7 @@ class EventBucket {
 }
 
 function parseHTML(htmlString) {
+
     //https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro
     const div = document.createElement('div');
     div.innerHTML = htmlString;
